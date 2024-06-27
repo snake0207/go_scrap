@@ -16,7 +16,6 @@ type extJob struct {
 }
 
 var baseURL string = "https://www.saramin.co.kr"
-var searchWords string = ""
 
 func init() {
 	fmt.Println("init call...")
@@ -26,16 +25,15 @@ func Scrape(words string) {
 	start := time.Now()
 
 	// global var
-	searchWords = words
 
 	var pageJobs []extJob
 	ch := make(chan []extJob)
-	totalPage := getPages()
-	fmt.Println(`totalPage : `, totalPage)
+	totalPage := GetPages(words)
+	fmt.Println("totalPage : ", totalPage)
 
 	
 	for i:= 1; i <= totalPage; i++ {
-		go getPage(i, ch)
+		go getPage(words, i, ch)
 	}
 	for i:= 1; i <= totalPage; i++ {
 		jobs := <-ch
@@ -67,9 +65,9 @@ func writeAllJobs(jobs []extJob) {
 	}
 }
 
-func getPage(page int, mainCh chan []extJob) {
+func getPage(srch string, page int, mainCh chan []extJob) {
 	var pageJobs []extJob
-	pageURL := fmt.Sprintf("%s/zf_user/search/recruit?=&searchword=%s&recruitPageCount=40&recruitPage=%d", baseURL, searchWords, page)
+	pageURL := fmt.Sprintf("%s/zf_user/search/recruit?=&searchword=%s&recruitPageCount=40&recruitPage=%d", baseURL, srch, page)
 	res, err := http.Get(pageURL)
 	checkError(err)
 	checkRespCode(res)
@@ -103,8 +101,8 @@ func extractCard(card *goquery.Selection, c chan extJob) {
 	c<-extJob{title: title, jobDate: jobDate, corpName: corpName}
 }
 
-func getPages() int {
-	pageURL := fmt.Sprintf("%s/zf_user/search/recruit?=&searchword=%s&recruitPageCount=40", baseURL, searchWords)
+func GetPages(srch string) int {
+	pageURL := fmt.Sprintf("%s/zf_user/search/recruit?=&searchword=%s&recruitPageCount=40", baseURL, srch)
 	res, err := http.Get(pageURL)
 
 	checkError(err)
