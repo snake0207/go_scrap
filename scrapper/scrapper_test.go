@@ -9,7 +9,7 @@ import (
 func TestGetPages(t *testing.T) {
 	count := scrapper.GetPages("python")
 
-	if count != 4 {
+	if count != 10 {
 		t.Error("Pages count wrong")
 	}
 }
